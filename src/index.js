@@ -11,56 +11,75 @@ const VEDA_MCP_URL = (process.env.VEDA_MCP_URL || DEFAULT_VEDA_MCP_URL).replace(
 const VEDA_MCP_TOKEN = process.env.VEDA_MCP_TOKEN || process.env.VEDA_API_TOKEN || "";
 const VEDA_TIMEOUT_MS = Number(process.env.VEDA_TIMEOUT_MS || 30000);
 
+function toolDefinition(name, description, properties = {}, required = []) {
+  return {
+    name,
+    description,
+    inputSchema: {
+      type: "object",
+      properties,
+      required,
+      additionalProperties: false,
+    },
+  };
+}
+
 const TOOL_DEFINITIONS = [
-  {
-    name: "list_packs",
-    description: "List Veda Knowledge Packs allowed for this MCP token.",
-    inputSchema: {
-      type: "object",
-      properties: {},
-      additionalProperties: false,
-    },
-  },
-  {
-    name: "get_pack_context_for_question",
-    description: "Return source-aware context from an allowed Veda Knowledge Pack for a user question.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        owner: {
-          type: "string",
-          description: "Pack owner handle, for example knowledgepack",
-        },
-        slug: {
-          type: "string",
-          description: "Pack slug",
-        },
-        question: {
-          type: "string",
-          description: "User question to answer with pack context",
-        },
-        intent: {
-          type: "string",
-          description: "Optional intent hint",
-          default: "auto",
-        },
-        maxTokens: {
-          type: "number",
-          description: "Maximum context token budget hint",
-          default: 3000,
-        },
-      },
-      required: ["owner", "slug", "question"],
-      additionalProperties: false,
-    },
-  },
+  toolDefinition("start_veda_session", "Start a guided Veda flow: call, create, or update a Knowledge Pack.", {
+    mode: { type: "string", enum: ["menu", "call", "create", "update"], description: "Initial flow mode" },
+  }),
+  toolDefinition("list_packs", "List Veda Knowledge Packs allowed for this MCP token."),
+  toolDefinition("search_packs", "Search allowed Veda Knowledge Packs.", {
+    query: { type: "string", description: "Search query" },
+    limit: { type: "number", description: "Max results", default: 8 },
+  }, ["query"]),
+  toolDefinition("attach_pack_to_session", "Attach one Veda Knowledge Pack as the active pack for this AI conversation.", {
+    owner: { type: "string", description: "Pack owner handle" },
+    slug: { type: "string", description: "Pack slug" },
+    purpose: { type: "string", description: "call or update", default: "call" },
+  }, ["owner", "slug"]),
+  toolDefinition("get_pack_manifest", "Return manifest-style structure and file metadata for one allowed Knowledge Pack.", {
+    owner: { type: "string", description: "Pack owner handle" },
+    slug: { type: "string", description: "Pack slug" },
+  }, ["owner", "slug"]),
+  toolDefinition("get_pack_sources", "Return source list for one allowed Knowledge Pack.", {
+    owner: { type: "string", description: "Pack owner handle" },
+    slug: { type: "string", description: "Pack slug" },
+  }, ["owner", "slug"]),
+  toolDefinition("get_answer_policy", "Return the answer policy for one allowed Knowledge Pack.", {
+    owner: { type: "string", description: "Pack owner handle" },
+    slug: { type: "string", description: "Pack slug" },
+  }, ["owner", "slug"]),
+  toolDefinition("get_pack_context_for_question", "Return source-aware context from an allowed Veda Knowledge Pack for a user question.", {
+    owner: { type: "string", description: "Pack owner handle, for example knowledgepack" },
+    slug: { type: "string", description: "Pack slug" },
+    question: { type: "string", description: "User question" },
+    intent: { type: "string", description: "Optional intent hint", default: "auto" },
+    maxTokens: { type: "number", description: "Maximum context token budget hint", default: 3000 },
+  }, ["owner", "slug", "question"]),
+  toolDefinition("create_pack_draft", "Guide the AI through creating a new Knowledge Pack draft.", {
+    topic: { type: "string", description: "What pack to create" },
+    purpose: { type: "string", description: "Why the user needs this pack" },
+    size: { type: "string", enum: ["small", "medium", "large"], description: "Desired pack size", default: "medium" },
+    sourceNotes: { type: "string", description: "Known sources or material summary" },
+  }, ["topic"]),
+  toolDefinition("update_pack_draft", "Guide the AI through updating an existing Knowledge Pack.", {
+    owner: { type: "string", description: "Pack owner handle" },
+    slug: { type: "string", description: "Pack slug" },
+    newInformation: { type: "string", description: "Content to add or change" },
+  }, ["owner", "slug", "newInformation"]),
+  toolDefinition("report_pack_issue", "Report missing or wrong knowledge for one allowed Knowledge Pack.", {
+    owner: { type: "string", description: "Pack owner handle" },
+    slug: { type: "string", description: "Pack slug" },
+    title: { type: "string", description: "Short issue title" },
+    description: { type: "string", description: "What is missing or wrong" },
+    issueType: { type: "string", description: "missing_topic, wrong_fact, stale_source, unclear_policy", default: "missing_topic" },
+  }, ["owner", "slug", "title"]),
 ];
 
 function requireToken() {
   if (!VEDA_MCP_TOKEN) {
-    throw new Error(
-      "Missing VEDA_MCP_TOKEN. Create a Veda MCP token in Veda, then set it in your AI app's MCP environment.",
-    );
+    throw new Error("Missing VEDA_MCP_TOKEN. Create a Veda MCP token in Veda, then set it in your AI app's MCP environment.");
   }
 }
 
@@ -71,7 +90,7 @@ function redact(value) {
     .replace(/veda_mcp_[A-Za-z0-9._~+/=-]+/gi, "veda_mcp_[REDACTED]");
 }
 
-async function callVeda(method, params = {}) {
+async function callVedaTool(name, args = {}) {
   requireToken();
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), VEDA_TIMEOUT_MS);
@@ -86,8 +105,8 @@ async function callVeda(method, params = {}) {
       body: JSON.stringify({
         jsonrpc: "2.0",
         id: Date.now(),
-        method,
-        params,
+        method: "tools/call",
+        params: { name, arguments: args },
       }),
       signal: controller.signal,
     });
@@ -124,34 +143,21 @@ function toToolContent(result) {
 }
 
 const server = new Server(
-  {
-    name: "veda-mcp",
-    version: "0.1.0",
-  },
-  {
-    capabilities: {
-      tools: {},
-    },
-  },
+  { name: "veda-mcp", version: "0.2.0" },
+  { capabilities: { tools: {} } },
 );
 
-server.setRequestHandler(ListToolsRequestSchema, async () => ({
-  tools: TOOL_DEFINITIONS,
-}));
+server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: TOOL_DEFINITIONS }));
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const name = request.params?.name;
   const args = request.params?.arguments || {};
 
-  if (name === "list_packs") {
-    return toToolContent(await callVeda("tools/call", { name: "list_packs", arguments: args }));
+  if (!TOOL_DEFINITIONS.some((tool) => tool.name === name)) {
+    throw new Error(`Unknown Veda tool: ${name}`);
   }
 
-  if (name === "get_pack_context_for_question") {
-    return toToolContent(await callVeda("tools/call", { name: "get_pack_context_for_question", arguments: args }));
-  }
-
-  throw new Error(`Unknown Veda tool: ${name}`);
+  return toToolContent(await callVedaTool(name, args));
 });
 
 const transport = new StdioServerTransport();

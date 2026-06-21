@@ -7,12 +7,21 @@ Veda MCP lets Claude, Cursor, Hermes, Codex, and other MCP-capable AI apps read 
 
 ## Tools
 
-This MCP exposes two tools:
+This MCP exposes a guided Veda workflow plus read/update draft helpers:
 
 | Tool | Purpose |
 |---|---|
+| `start_veda_session` | Start a guided flow: call, create, or update a Knowledge Pack. |
 | `list_packs` | List Knowledge Packs allowed for your Veda MCP token. |
+| `search_packs` | Search allowed Knowledge Packs. |
+| `attach_pack_to_session` | Attach one Knowledge Pack as the active pack for the current AI conversation. |
+| `get_pack_manifest` | Return pack structure, version, and file metadata. |
+| `get_pack_sources` | Return source list for a pack. |
+| `get_answer_policy` | Return pack-specific answer rules. |
 | `get_pack_context_for_question` | Return compact, source-aware context from a selected pack for a user question. |
+| `create_pack_draft` | Guide draft creation for a new Knowledge Pack. |
+| `update_pack_draft` | Guide an update draft for an existing Knowledge Pack. |
+| `report_pack_issue` | Report missing or wrong knowledge. |
 
 ## Quick install by asking your AI
 
