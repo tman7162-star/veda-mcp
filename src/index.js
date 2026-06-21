@@ -33,7 +33,7 @@ const TOOL_DEFINITIONS = [
     query: { type: "string", description: "Search query" },
     limit: { type: "number", description: "Max results", default: 8 },
   }, ["query"]),
-  toolDefinition("attach_pack_to_session", "Attach one Veda Knowledge Pack as the active pack for this AI conversation.", {
+  toolDefinition("attach_pack_to_session", "Attach one Veda Knowledge Pack as the active pack for this AI conversation. After attachment, use it as default evidence for related questions without requiring the user to say 'answer with this pack'.", {
     owner: { type: "string", description: "Pack owner handle" },
     slug: { type: "string", description: "Pack slug" },
     purpose: { type: "string", description: "call or update", default: "call" },
@@ -79,7 +79,7 @@ const TOOL_DEFINITIONS = [
 
 function requireToken() {
   if (!VEDA_MCP_TOKEN) {
-    throw new Error("Missing VEDA_MCP_TOKEN. Create a Veda MCP token in Veda, then set it in your AI app's MCP environment.");
+    throw new Error("Missing Veda connection key. Create/approve a Veda MCP connection, then set VEDA_MCP_TOKEN in your AI app's MCP environment.");
   }
 }
 
