@@ -1,0 +1,33 @@
+{
+  "name": "veda-mcp",
+  "version": "0.1.0",
+  "description": "MCP stdio bridge for Veda AI-readable Knowledge Packs.",
+  "type": "module",
+  "bin": {
+    "veda-mcp": "./src/index.js"
+  },
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "check": "node --check src/index.js",
+    "smoke:list-tools": "node scripts/smoke-list-tools.mjs"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "veda",
+    "knowledge-pack",
+    "ai"
+  ],
+  "author": "Dohyung Kim",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.20.0"
+  }
+}
