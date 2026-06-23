@@ -57,11 +57,25 @@ const TOOL_DEFINITIONS = [
     intent: { type: "string", description: "Optional intent hint", default: "auto" },
     maxTokens: { type: "number", description: "Maximum context token budget hint", default: 3000 },
   }, ["owner", "slug", "question"]),
-  toolDefinition("create_pack_draft", "Guide the AI through creating a new Knowledge Pack draft.", {
+  toolDefinition("create_pack_draft", "Collect material, compile, and save a new private Knowledge Pack draft on Veda. Publishing (going public or connecting) stays a human approval step on the web.", {
+    name: { type: "string", description: "Pack title / display name. If omitted, the topic is used." },
     topic: { type: "string", description: "What pack to create" },
     purpose: { type: "string", description: "Why the user needs this pack" },
     size: { type: "string", enum: ["small", "medium", "large"], description: "Desired pack size", default: "medium" },
-    sourceNotes: { type: "string", description: "Known sources or material summary" },
+    sourceNotes: { type: "string", description: "Collected source material/notes to compile into the pack. Write the canonical pack content in English." },
+    files: {
+      type: "array",
+      description: "Collected source files the AI has read (e.g. extracted PDF/CSV/markdown text). Each item: { name, type, content }.",
+      items: {
+        type: "object",
+        properties: {
+          name: { type: "string", description: "File or source name" },
+          type: { type: "string", enum: ["text", "markdown", "csv", "link", "pdf_text", "other"], description: "Source type" },
+          content: { type: "string", description: "Extracted text content of the file" },
+        },
+        required: ["content"],
+      },
+    },
   }, ["topic"]),
   toolDefinition("update_pack_draft", "Guide the AI through updating an existing Knowledge Pack.", {
     owner: { type: "string", description: "Pack owner handle" },
