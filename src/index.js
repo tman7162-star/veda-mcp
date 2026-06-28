@@ -38,7 +38,7 @@ const TOOL_DEFINITIONS = [
     slug: { type: "string", description: "Pack slug" },
     purpose: { type: "string", description: "call or update", default: "call" },
   }, ["owner", "slug"]),
-  toolDefinition("get_pack_manifest", "Return manifest-style structure and file metadata for one allowed Knowledge Pack.", {
+  toolDefinition("get_pack_manifest", "Return manifest-style structure, index/knowledge group files, and file metadata for one allowed Knowledge Pack.", {
     owner: { type: "string", description: "Pack owner handle" },
     slug: { type: "string", description: "Pack slug" },
   }, ["owner", "slug"]),
@@ -50,14 +50,14 @@ const TOOL_DEFINITIONS = [
     owner: { type: "string", description: "Pack owner handle" },
     slug: { type: "string", description: "Pack slug" },
   }, ["owner", "slug"]),
-  toolDefinition("get_pack_context_for_question", "Return source-aware context from an allowed Veda Knowledge Pack for a user question.", {
+  toolDefinition("get_pack_context_for_question", "Return source-aware context from an allowed Veda Knowledge Pack for a user question. Use index.json to load only the relevant knowledge/*.jsonl groups.", {
     owner: { type: "string", description: "Pack owner handle, for example knowledgepack" },
     slug: { type: "string", description: "Pack slug" },
     question: { type: "string", description: "User question" },
     intent: { type: "string", description: "Optional intent hint", default: "auto" },
     maxTokens: { type: "number", description: "Maximum context token budget hint", default: 3000 },
   }, ["owner", "slug", "question"]),
-  toolDefinition("create_pack_draft", "Collect material, compile, and save a new private Knowledge Pack draft on Veda. Publishing (going public or connecting) stays a human approval step on the web.", {
+  toolDefinition("create_pack_draft", "Collect material, compile, and save a new private Knowledge Pack draft on Veda using the v1.4 structure: PACK.md, usage-guide.md, index.json, sources.csv, and knowledge/<group_id>.jsonl groups. Publishing stays a human approval step on the web.", {
     name: { type: "string", description: "Pack title / display name. If omitted, the topic is used." },
     topic: { type: "string", description: "What pack to create" },
     purpose: { type: "string", description: "Why the user needs this pack" },
