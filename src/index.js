@@ -6,7 +6,8 @@ import {
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 
-const DEFAULT_VEDA_MCP_URL = "https://veda.app/mcp";
+const DEFAULT_VEDA_MCP_URL = "https://veda.necelab.net/mcp";
+const BRIDGE_VERSION = "0.2.1";
 const VEDA_MCP_URL = (process.env.VEDA_MCP_URL || DEFAULT_VEDA_MCP_URL).replace(/\/$/, "");
 const VEDA_MCP_TOKEN = process.env.VEDA_MCP_TOKEN || process.env.VEDA_API_TOKEN || "";
 const VEDA_TIMEOUT_MS = Number(process.env.VEDA_TIMEOUT_MS || 30000);
@@ -25,6 +26,7 @@ function toolDefinition(name, description, properties = {}, required = []) {
 }
 
 const TOOL_DEFINITIONS = [
+  toolDefinition("get_veda_mcp_status", "Confirm that this Veda MCP connection is working and return the current MCP version. After installation, call this first and tell the user the returned messageForUser value."),
   toolDefinition("start_veda_session", "Start a guided Veda flow: call, create, or update a Knowledge Pack.", {
     mode: { type: "string", enum: ["menu", "call", "create", "update"], description: "Initial flow mode" },
   }),
@@ -157,7 +159,7 @@ function toToolContent(result) {
 }
 
 const server = new Server(
-  { name: "veda-mcp", version: "0.2.0" },
+  { name: "veda-mcp", version: BRIDGE_VERSION },
   { capabilities: { tools: {} } },
 );
 

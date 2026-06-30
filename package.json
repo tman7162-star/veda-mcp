@@ -1,6 +1,6 @@
 {
   "name": "veda-mcp",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "MCP stdio bridge for Veda AI-readable Knowledge Packs.",
   "type": "module",
   "bin": {

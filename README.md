@@ -11,6 +11,7 @@ This MCP exposes a guided Veda workflow plus read/update draft helpers:
 
 | Tool | Purpose |
 |---|---|
+| `get_veda_mcp_status` | Confirm the connection and return the current Veda MCP version. Call this first after installation/approval and tell the user the returned connection message. |
 | `start_veda_session` | Start a guided flow: call, create, or update a Knowledge Pack. |
 | `list_packs` | List Knowledge Packs allowed for your Veda MCP token. |
 | `search_packs` | Search allowed Knowledge Packs. |
@@ -37,10 +38,10 @@ Use this command-based MCP server:
 npx -y github:tman7162-star/veda-mcp
 
 Environment variables:
-VEDA_MCP_URL=https://veda.app/mcp
+VEDA_MCP_URL=https://veda.necelab.net/mcp
 VEDA_MCP_TOKEN=<my Veda connection key here>
 
-After installing, test it by listing my Veda Knowledge Packs.
+After installing, test it by calling `get_veda_mcp_status`, tell me the returned Veda MCP version, then list my Veda Knowledge Packs.
 ```
 
 ## Manual MCP config
@@ -54,7 +55,7 @@ Most MCP clients accept a config shape similar to this:
       "command": "npx",
       "args": ["-y", "github:tman7162-star/veda-mcp"],
       "env": {
-        "VEDA_MCP_URL": "https://veda.app/mcp",
+        "VEDA_MCP_URL": "https://veda.necelab.net/mcp",
         "VEDA_MCP_TOKEN": "veda_mcp_xxxxxxxxxxxxxxxxxxxx"
       }
     }
@@ -84,7 +85,7 @@ For local development against a local Veda web app:
 | Variable | Required | Default | Description |
 |---|---:|---|---|
 | `VEDA_MCP_TOKEN` | yes | - | Veda connection key generated/approved from your Veda account. |
-| `VEDA_MCP_URL` | no | `https://veda.app/mcp` | Veda MCP endpoint. Use a local URL for local development. |
+| `VEDA_MCP_URL` | no | `https://veda.necelab.net/mcp` | Veda MCP endpoint. Use a local URL for local development. |
 | `VEDA_TIMEOUT_MS` | no | `30000` | Request timeout in milliseconds. |
 
 ## Security notes
